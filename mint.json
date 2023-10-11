@@ -124,11 +124,11 @@
           ]
         }
       ],
-      "footerSocials": {
-        "twitter": "https://twitter.com/census",
-        "github": "https://github.com/sutrolabs",
-        "linkedin": "https://www.linkedin.com/company/getcensus"
-      }
     }
-  ]
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/census",
+    "github": "https://github.com/sutrolabs",
+    "linkedin": "https://www.linkedin.com/company/getcensus"
+  }
 }
