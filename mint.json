@@ -1,4 +1,8 @@
 {
+  "openapi": [
+    "/openapi/organization_management.yaml",
+    "/openapi/workspace_management.yaml"
+  ],
   "$schema": "https://mintlify.com/schema.json",
   "name": "Starter Kit",
   "logo": {
@@ -54,29 +58,77 @@
   "navigation": [
     {
       "group": "Get Started",
-      "pages": ["introduction", "quickstart", "development"]
+      "pages": [
+        "introduction",
+        "quickstart",
+        "development"
+      ]
     },
     {
       "group": "Essentials",
-      "pages": ["essentials/markdown", "essentials/code", "essentials/images", "essentials/settings", "essentials/navigation"]
+      "pages": [
+        "essentials/markdown",
+        "essentials/code",
+        "essentials/images",
+        "essentials/settings",
+        "essentials/navigation"
+      ]
     },
     {
       "group": "API Documentation",
-      "pages": ["api-reference/authentication"]
-    },
-    {
-      "group": "Endpoint Examples",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/update",
-        "api-reference/endpoint/delete"
-      ]
+        "api-reference/authentication",
+        {
+          "group": "Workspace Management",
+          "pages": [
+            {
+              "group": "Syncs",
+              "pages": [
+                "api-reference/syncs/create-a-new-sync"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Organization Management",
+          "pages": [
+            {
+              "group": "Users",
+              "pages": [
+                "api-reference/users/retrieve-a-list-of-all-users-in-the-organization",
+                "api-reference/users/retrieve-details-of-a-specific-user",
+                "api-reference/users/remove-a-user-from-the-organization",
+                "api-reference/users/update-a-users-role-within-the-organization"
+              ]
+            },
+            {
+              "group": "Invitations",
+              "pages": [
+                "api-reference/invitations/list-invitations-to-the-organization",
+                "api-reference/invitations/retrieve-details-of-a-specific-invitation",
+                "api-reference/invitations/update-an-unclaimed-invitations-role-within-the-organization",
+                "api-reference/invitations/revoke-an-unclaimed-invitation-so-it-can-no-longer-be-used",
+                "api-reference/invitations/resend-the-email-for-an-unclaimed-invitation"
+              ]
+            },
+            {
+              "group": "Workspaces",
+              "pages": [
+                "api-reference/workspaces/retrieve-the-details-of-all-workspaces-within-the-organization",
+                "api-reference/workspaces/create-a-new-workspace",
+                "api-reference/workspaces/retrieve-the-details-of-a-specific-workspace",
+                "api-reference/workspaces/delete-a-specific-workspace",
+                "api-reference/workspaces/update-the-details-of-a-workspace"
+              ]
+            }
+          ]
+        }
+      ],
+      "footerSocials": {
+        "twitter": "https://twitter.com/census",
+        "github": "https://github.com/sutrolabs",
+        "linkedin": "https://www.linkedin.com/company/getcensus"
+      }
     }
-  ],
-  "footerSocials": {
-    "twitter": "https://twitter.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://www.linkedin.com/company/mintsearch"
-  }
+  ]
 }

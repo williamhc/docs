@@ -1,0 +1,344 @@
+openapi: 3.0.0
+info:
+  title: Workspace Management API
+  version: 1.0.0
+servers:
+  - url: https://app.getcensus.com/api/v1
+paths:
+  /syncs:
+    post:
+      summary: Create a new sync
+      operationId: createSync
+      tags:
+        - Syncs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - operation
+                - source_attributes
+                - destination_attributes
+                - mappings
+              properties:
+                label:
+                  type: string
+                  description: A label to give to this sync.
+                  example: New Signups to Leads
+                operation:
+                  type: string
+                  description: How records are synced to the destination.
+                  example: mirror
+                  enum:
+                    - append
+                    - insert
+                    - mirror
+                    - update
+                    - upsert
+                source_attributes:
+                  $ref: "#/components/schemas/SourceAttributes"
+                  example:
+                    connection_id: 12
+                    object:
+                      type: model
+                      name: test_ads
+                destination_attributes:
+                  $ref: "#/components/schemas/DestinationAttributes"
+                  example:
+                    connection_id: 15
+                    object: user_data
+                mappings:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/MappingAttributes"
+                  example:
+                    - from:
+                        type: column
+                        data: hashed_email
+                      to: user_identifier.hashed_email_PREHASHED
+                      is_primary_identifier: true
+                    - from:
+                        type: column
+                        data: list_id
+                      to: list_id
+                      lookup_object: user_list
+                      lookup_field: name
+                    - from:
+                        type: constant_value
+                        data:
+                          value: cohort_1
+                          basic_type: text
+                      to: cohort
+                schedule_frequency:
+                  type: string
+                  description: When this sync should be run.
+                  example: daily
+                  enum:
+                    - never
+                    - continuous
+                    - quarter_hourly
+                    - hourly
+                    - daily
+                    - weekly
+                    - expression
+                schedule_day:
+                  type: string
+                  description: What day of the week this sync should run if `schedule_frequency` is set to `"weekly"`.
+                  example: Monday
+                  enum:
+                    - Sunday
+                    - Monday
+                    - Tuesday
+                    - Wednesday
+                    - Thursday
+                    - Friday
+                    - Saturday
+                schedule_hour:
+                  type: integer
+                  description: What hour of the day this sync should run if `schedule_frequency` is set to `"weekly"` or `"daily"`.
+                  minimum: 0
+                  maximum: 24
+                  example: 10
+                schedule_minute:
+                  type: integer
+                  description: What minute of the hour this sync should run if `scheule_frequency` is set to `"weekly"`, `"daily"` or `"hourly"`.
+                  minimum: 0
+                  maximum: 59
+                  example: 30
+                cron_expression:
+                  type: string
+                  description: Specify what cron schedule this sync should run on if the `schedule_frequency` is set to `"experessions"`.
+                  example: "* 1 * * *"
+                paused:
+                  type: boolean
+                  description: Whether or not this sync should be paused.
+                  example: false
+                triggers:
+                  type: object
+                  description: Specify triggers for the sync. More than one type trigger can be configured.
+                  properties:
+                    dbt_cloud:
+                      type: object
+                      description: Contains the dbt Cloud job details that should trigger the sync upon success. dbt Cloud project and job IDs can be found in the URL when navigating to a job in the dbt Cloud application or via API.
+                      properties:
+                        project_id:
+                          type: string
+                          description: The dbt Cloud project id.
+                          example: "12345"
+                        job_id:
+                          type: string
+                          description: The dbt Cloud job id.
+                          example: "123456"
+                    fivetran:
+                      type: object
+                      description: The Fivetran job details that should trigger the sync upon success. Fivetran job name can be found in the table of Connectors or Transformations via the Fivetran application and the job id can be found in the URL when navigated to the specific connector/transform details page. These information can also be retrieved via API.
+                      properties:
+                        job_id:
+                          type: string
+                          description: The Fivetran job id.
+                          example: "test_job_id"
+                        job_name:
+                          type: string
+                          description: The Fivetran job name.
+                          example: "test_job_name"
+                    sync_sequence:
+                      type: object
+                      description: The sync details that should trigger the sync upon success. The sync id can be found via the API or in the URL within the Census management UI.
+                      properties:
+                        sync_id:
+                          type: integer
+                          description: The dependent sync id.
+                          example: 123
+                field_behavior:
+                  type: string
+                  description: Specify `"sync_all_properties"` to automatically update mappings.
+                  example: sync_all_properties
+                field_normalization:
+                  type: string
+                  description: If `field_behavior` is set to `"sync_all_properties"`, specify how automatic mappings should be named.
+                  example: snake_case
+                  enum:
+                    - start_case
+                    - lower_case
+                    - upper_case
+                    - camel_case
+                    - snake_case
+                    - match_source_names
+                high_water_mark_attributes:
+                  description: The high water mark diffing strategy will allow append syncs to use a timestamp column when identifying new records instead of the default Census diff engine (using primary keys).
+                  type: object
+                  required: [use_high_water_mark_diff_type, column_name]
+                  properties:
+                    use_high_water_mark_diff_type:
+                      description: If true, the high water mark diff strategy will be used.
+                      type: boolean
+                      example: true
+                    column_name:
+                      description: The name of the column that should be used for identifying new records.
+                      type: string
+                      example: updated_at
+                validate_only:
+                  description: When true, checks if the given payload is valid to configure a sync. Does not create the sync.
+                  type: boolean
+                  default: false
+                  example: true
+                failed_run_notifications_enabled:
+                  description: When true, will email all workspace users with email notifications enabled and all workspace additional emails when the sync fails and recovers.
+                  type: boolean
+                  default: true
+                  example: false
+                failed_record_notifications_enabled:
+                  description: When true, will email all workspace users with email notifications enabled and all workspace additional emails when the sync has more than failed_record_notifications_threshold_percent rejected or invalid records in the source or destination.
+                  type: boolean
+                  default: true
+                  example: false
+                failed_record_notifications_threshold_percent:
+                  description: The percentage of rejected and invalid records for which failed record emails will be triggered.
+                  type: integer
+                  default: 75
+                  minimum: 0
+                  maximum: 100
+                  example: 10
+      responses:
+        201:
+          description: Sync created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: created
+                  data:
+                    type: object
+                    properties:
+                      sync_id:
+                        type: integer
+                        example: 4545
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SourceAttributes:
+      description: Attributes used to identify the data source for this sync.
+      type: object
+      required:
+        - connection_id
+        - object
+      properties:
+        connection_id:
+          type: integer
+          description: The id used to identify the source connection.
+        filter_segment_id:
+          type: integer
+          description: The id used to identify the segment data source.
+        object:
+          type: object
+          description: Attributes of the data source.
+          required: [type]
+          properties:
+            type:
+              type: string
+              description: The type of your data source.
+              enum:
+                - table
+                - model
+            id:
+              type: integer
+              description: The id of the data source.
+              example: 1543
+            name:
+              type: string
+              description: The name of the data source. Required when the `type` is model and `id` is not specified.
+              example: "New Signups"
+            table_name:
+              type: string
+              description: The name of the table. Required when the `type` is table and `id` is not specified.
+              example: "events"
+            table_schema:
+              type: string
+              description: The schema of the table. Required when the `type` is table and `id` is not specified.
+              example: "publish"
+            table_catalog:
+              type: string
+              description: The catalog of the table. Required when the `type` is table and `id` is not specified.
+              example: "data_mart"
+
+    DestinationAttributes:
+      type: object
+      properties:
+        connection_id:
+          type: integer
+          description: The id used to identify the destination connection.
+        object:
+          type: string
+          description: The full name of the destination object.
+        lead_union_insert_to:
+          type: string
+          description: Where to insert a union object (for Salesforce connections).
+
+    MappingAttributes:
+      type: object
+      required:
+        - from
+        - to
+        - is_primary_identifier
+      properties:
+        from:
+          description: An object representing the source of the mapping. It will either be an object describing a column or a constant value.
+          type: object
+          oneOf:
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - constant_value
+                data:
+                  type: object
+                  properties:
+                    basic_type:
+                      description: The type of the constant value.
+                      type: string
+                      enum:
+                        - boolean
+                        - datetime
+                        - number
+                        - text
+                    value:
+                      description: A representation of the constant value.
+                      type: string
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - column
+                data:
+                  description: The name of the column
+                  type: string
+        to:
+          type: string
+        is_primary_identifier:
+          type: boolean
+        generate_field:
+          type: boolean
+        preserve_values:
+          type: boolean
+        operation:
+          type: string
+        lookup_object:
+          type: string
+        lookup_field:
+          type: string
+
+security:
+  - BearerAuth: []

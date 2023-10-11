@@ -1,0 +1,577 @@
+openapi: 3.1.0
+info:
+  title: Organization Management API
+  version: 1.0.0
+servers:
+  - url: https://app.getcensus.com/api/v1
+    description: Production server (uses live data)
+security:
+  - BearerAuth: []
+paths:
+  /users:
+    get:
+      tags:
+        - Users
+      operationId: listUsers
+      summary: Retrieve a list of all users in the organization.
+      responses:
+        '200':
+          description: Successfully retrieved list of users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - success
+                      - updated
+                      - created
+                      - not_found
+                      - error
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                    description: List of users in the organization.
+                required:
+                  - status
+                  - data
+  /users/{user_id}:
+    get:
+      tags:
+        - Users
+      operationId: fetchUserDetails
+      summary: Retrieve details of a specific user.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the user to be fetched.
+      responses:
+        '200':
+          description: Successfully retrieved user details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - success
+                      - updated
+                      - created
+                      - not_found
+                      - error
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/User'
+                required:
+                  - status
+                  - data
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    description: HTTP status code.
+                    example: 404
+    delete:
+      tags:
+        - Users
+      operationId: removeUser
+      summary: Remove a user from the organization.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the user to be deleted.
+      responses:
+        '200':
+          description: Successfully deleted the user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - success
+                      - updated
+                      - created
+                      - not_found
+                      - error
+                      - deleted
+                    example: deleted
+                  data:
+                    type: object
+                    description: Empty object indicating no data.
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    description: HTTP status code.
+                    example: 404
+    patch:
+      tags:
+        - Users
+      operationId: updateUser
+      summary: Update a user's role within the organization.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the user to be updated.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    role:
+                      type: string
+                      enum:
+                        - admin
+                        - member
+                      description: The new role for the user.
+                      example: admin
+      responses:
+        '200':
+          description: Successfully updated user's role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - success
+                      - updated
+                      - created
+                      - not_found
+                      - error
+                    example: updated
+                  data:
+                    $ref: '#/components/schemas/User'
+        '404':
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    description: HTTP status code.
+                    example: 404
+  /invitations:
+    get:
+      tags:
+        - Invitations
+      operationId: listInvitations
+      summary: List invitations to the organization.
+      responses:
+        '200':
+          description: Successfully retrieved list of invitations.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invitation'
+  /invitations/{invitation_id}:
+    get:
+      tags:
+        - Invitations
+      operationId: fetchInvitationDetails
+      summary: Retrieve details of a specific invitation.
+      parameters:
+        - name: invitation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved invitation details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Invitation'
+        '404':
+          description: Invitation not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+    patch:
+      tags:
+        - Invitations
+      operationId: updateInvitation
+      summary: Update an unclaimed invitation's role within the organization.
+      parameters:
+        - name: invitation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum:
+                    - admin
+                    - member
+      responses:
+        '200':
+          description: Successfully updated invitation's role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: updated
+                  data:
+                    $ref: '#/components/schemas/Invitation'
+        '404':
+          description: Invitation not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+  /invitations/{invitation_id}/revoke:
+    post:
+      tags:
+        - Invitations
+      operationId: revokeInvitation
+      summary: Revoke an unclaimed invitation so it can no longer be used.
+      parameters:
+        - name: invitation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully revoked the invitation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: revoked
+  /invitations/{invitation_id}/resend:
+    post:
+      tags:
+        - Invitations
+      operationId: resendInvitation
+      summary: Resend the email for an unclaimed invitation.
+      parameters:
+        - name: invitation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully resent the invitation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: resend
+  /workspaces:
+    get:
+      tags:
+        - Workspaces
+      operationId: listWorkspaces
+      summary: Retrieve the details of all workspaces within the organization.
+      responses:
+        '200':
+          description: Successfully retrieved list of workspaces.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workspace'
+    post:
+      tags:
+        - Workspaces
+      operationId: createWorkspace
+      summary: Create a new workspace.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of your workspace.
+                  example: My New Workspace
+                notification_emails:
+                  type: array
+                  items:
+                    type: string
+                  description: The list of emails that will receive alerts.
+                  example:
+                    - notifications@mycompany.slack.com
+      responses:
+        '201':
+          description: Successfully created a new workspace.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Workspace'
+  /workspaces/{workspace_id}:
+    get:
+      tags:
+        - Workspaces
+      operationId: fetchWorkspaceDetails
+      summary: Retrieve the details of a specific workspace.
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved workspace details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Workspace'
+    patch:
+      tags:
+        - Workspaces
+      operationId: updateWorkspace
+      summary: Update the details of a workspace.
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The new name of your workspace.
+                  example: My Updated Workspace
+                notification_emails:
+                  type: array
+                  items:
+                    type: string
+                  description: The list of emails that will receive alerts.
+                  example:
+                    - notifications@mycompany.slack.com
+      responses:
+        '200':
+          description: Successfully updated workspace details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: updated
+                  data:
+                    $ref: '#/components/schemas/Workspace'
+    delete:
+      tags:
+        - Workspaces
+      operationId: deleteWorkspace
+      summary: Delete a specific workspace.
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully deleted workspace.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: deleted
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the user.
+          example: '12345'
+        email:
+          type: string
+          description: User's email address.
+          example: john.doe@example.com
+        role:
+          type: string
+          description: User's role.
+          enum:
+            - admin
+            - member
+          example: admin
+        created_at:
+          type: string
+          description: Timestamp of user account creation.
+          example: '2023-08-20T10:00:00Z'
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the invitation.
+          example: 980190967
+        email:
+          type: string
+          description: Email address of the invitee.
+          example: newuser@example.com
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the invitation was created.
+          example: '2023-09-22T20:25:45.185Z'
+        created_by_id:
+          type: integer
+          description: ID of the user who created the invitation.
+          example: 980190964
+        claimed_at:
+          type: string
+          format: date-time
+          description: Timestamp when the invitation was claimed.
+        claimed_by_id:
+          type: integer
+          description: ID of the user who claimed the invitation.
+        role:
+          type: string
+          enum:
+            - admin
+            - member
+          description: Role assigned to the invitee.
+          example: admin
+    Workspace:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The id of the retrieved workspace.
+          example: 123
+        name:
+          type: string
+          description: The name of the retrieved workspace.
+          example: My Workspace
+        organization_id:
+          type: integer
+          description: The id of the organization the workspace belongs to.
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: The timestamp of when the workspace was created.
+          example: '2023-09-05T19:42:42.672Z'
+        notification_emails:
+          type: array
+          items:
+            type: string
+          description: The list of emails that will receive alerts from the workspace.
+          example: []
+        api_key:
+          type: string
+          description: The API key of the workspace.
+          example: YourAPIKeyHere
